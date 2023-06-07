@@ -1,22 +1,12 @@
-# Attribute-driven tokenisation for PHP.
+# Lexical
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/ryangjchandler/lexical.svg?style=flat-square)](https://packagist.org/packages/ryangjchandler/lexical)
 [![Tests](https://img.shields.io/github/actions/workflow/status/ryangjchandler/lexical/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/ryangjchandler/lexical/actions/workflows/run-tests.yml)
 [![Total Downloads](https://img.shields.io/packagist/dt/ryangjchandler/lexical.svg?style=flat-square)](https://packagist.org/packages/ryangjchandler/lexical)
 
-This is where your description should go. Try and limit it to a paragraph or two. Consider adding a small example.
-
-## Support us
-
-[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/lexical.jpg?t=1" width="419px" />](https://spatie.be/github-ad-click/lexical)
-
-We invest a lot of resources into creating [best in class open source packages](https://spatie.be/open-source). You can support us by [buying one of our paid products](https://spatie.be/open-source/support-us).
-
-We highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using. You'll find our address on [our contact page](https://spatie.be/about-us). We publish all received postcards on [our virtual postcard wall](https://spatie.be/open-source/postcards).
-
 ## Installation
 
-You can install the package via composer:
+You can install the package via Composer:
 
 ```bash
 composer require ryangjchandler/lexical
@@ -24,9 +14,46 @@ composer require ryangjchandler/lexical
 
 ## Usage
 
+Let's write a simple lexer for mathematical expressions. The expressions can contain numbers (only integers) and a handful of operators (`+`, `-`, `*`, `/`).
+
+Begin by creating a new enumeration that describes the token types.
+
 ```php
-$skeleton = new RyanChandler\Lexical();
-echo $skeleton->echoPhrase('Hello, RyanChandler!');
+enum TokenType
+{
+    case Number;
+    case Add;
+    case Subtract;
+    case Multiply;
+    case Divide;
+}
+```
+
+Lexical provides a set of attributes that can be added to each case in an enumeration:
+* `Regex` - accepts a single regular expression.
+* `Literal` - accepts a string of continuous characters.
+* `Error` - designates a specific enumeration case as the "error" type.
+
+Using those attributes with `TokenType` looks like this.
+
+```php
+enum TokenType
+{
+    #[Regex("[0-9]+")]
+    case Number;
+    
+    #[Literal("+")]
+    case Add;
+    
+    #[Literal("-")]
+    case Subtract;
+    
+    #[Literal("*")]
+    case Multiply;
+
+    #[Literal("/")]
+    case Divide;
+}
 ```
 
 ## Testing
