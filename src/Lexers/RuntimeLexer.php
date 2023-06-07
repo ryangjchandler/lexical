@@ -7,34 +7,20 @@ use RyanChandler\Lexical\Contracts\LexerInterface;
 use RyanChandler\Lexical\Exceptions\UnexpectedCharacterException;
 use UnitEnum;
 
-/**
- * @template T of \UnitEnum
- * @template U
- * @implements LexerInterface<U>
- */
 class RuntimeLexer implements LexerInterface
 {
-    /** @var array<string, T> */
     protected array $patterns;
 
-    /** @var Closure(T, string): U */
     protected Closure $produceTokenUsing;
 
     protected string $skip;
 
-    /** @var T|null */
     protected ?UnitEnum $errorType = null;
 
     protected string $regex;
 
-    /** @var array<int, T> */
     protected array $positionToTokenType;
 
-    /**
-     * @param array<string, T> $patterns
-     * @param Closure(T, string): U $produceTokensUsing
-     * @param string $skip A regular expression describing patterns that should be skipped.
-     */
     public function __construct(array $patterns, Closure $produceTokenUsing, ?string $skip = null, ?UnitEnum $errorType = null)
     {
         $this->patterns = $patterns;
@@ -45,7 +31,6 @@ class RuntimeLexer implements LexerInterface
         $this->positionToTokenType = array_values($patterns);
     }
 
-    /** {@inheritDoc} */
     public function tokenise(string $input): array
     {
         $tokens = [];

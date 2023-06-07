@@ -15,16 +15,10 @@ use RyanChandler\Lexical\Attributes\Literal;
 use RyanChandler\Lexical\Lexers\RuntimeLexer;
 use RyanChandler\Lexical\Contracts\LexerInterface;
 
-/**
- * @template T of \UnitEnum
- * @template U
- */
 class LexicalBuilder
 {
-    /** @var class-string<T> */
     protected string $readDefinitionsFrom;
 
-    /** @var Closure(T, string): U */
     protected Closure $produceTokenUsing;
 
     public function __construct()
@@ -32,12 +26,6 @@ class LexicalBuilder
         $this->produceTokenUsing = fn (UnitEnum $type, string $literal) => [$type, $literal];
     }
 
-    /**
-     * Specify which enumeration should be used to locate definitions.
-     *
-     * @param  class-string<T>  $class
-     * @return static
-     */
     public function readTokenTypesFrom(string $class): static
     {
         $this->readDefinitionsFrom = $class;
@@ -45,12 +33,6 @@ class LexicalBuilder
         return $this;
     }
 
-    /**
-     * Provide a callback to change how tokens are represented.
-     *
-     * @param  Closure(T, string): U  $closure
-     * @return static
-     */
     public function produceTokenUsing(Closure $callback): static
     {
         $this->produceTokenUsing = $callback;
