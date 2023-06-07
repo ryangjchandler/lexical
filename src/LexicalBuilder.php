@@ -83,6 +83,6 @@ class LexicalBuilder
             }
         }
 
-        return new RuntimeLexer($patterns, $this->produceTokenUsing, '/'.$skip.'/A', $errorCase);
+        return new RuntimeLexer($patterns, $this->produceTokenUsing, $skip, $errorCase);
     }
 }

@@ -6,8 +6,17 @@ use Exception;
 
 class UnexpectedCharacterException extends Exception
 {
+    public readonly string $character;
+
+    public readonly int $position;
+
     public static function make(string $character, int $position): static
     {
-        return new static(sprintf('Unexpected character "%s" as position %d', $character, $position));
+        $exception = new static(sprintf('Unexpected character "%s" at position %d', $character, $position));
+
+        $exception->character = $character;
+        $exception->position = $position;
+
+        return $exception;
     }
 }

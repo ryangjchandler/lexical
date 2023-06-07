@@ -37,16 +37,16 @@ class RuntimeLexer implements LexerInterface
         $offset = 0;
 
         while (isset($input[$offset])) {
-            if (preg_match($this->regex, $input, $matches, PREG_UNMATCHED_AS_NULL, $offset) === false || $matches === []) {
-                if ($this->skip !== null) {
-                    preg_match($this->skip, $input, $skipMatches, 0, $offset);
+            if ($this->skip !== null) {
+                preg_match('/'.$this->skip.'/A', $input, $skips, 0, $offset);
 
-                    if (isset($skipMatches[0])) {
-                        $offset += strlen($skipMatches[0]);
-                        continue;
-                    }
+                if (isset($skips[0])) {
+                    $offset += strlen($skips[0]);
+                    continue;
                 }
+            }
 
+            if (! preg_match($this->regex, $input, $matches, PREG_UNMATCHED_AS_NULL, $offset)) {
                 if ($this->errorType === null) {
                     throw UnexpectedCharacterException::make($input[$offset], $offset);
                 }
@@ -59,7 +59,7 @@ class RuntimeLexer implements LexerInterface
             }
 
             $tokens[] = call_user_func($this->produceTokenUsing, $token[1], $token[0]);
-            $offset += strlen($matches[0]);
+            $offset += strlen($token[0]);
         }
 
         return $tokens;
@@ -67,9 +67,10 @@ class RuntimeLexer implements LexerInterface
 
     protected function findNextMatchAndProduceError(string $input, int &$offset): array
     {
+        $patterns = [...array_keys($this->patterns), $this->skip];
         $offsets = [];
 
-        foreach ($this->patterns as $pattern => $_) {
+        foreach ($patterns as $pattern) {
             if (! preg_match('/'.$pattern.'/', $input, $matches, PREG_OFFSET_CAPTURE, $offset)) {
                 continue;
             }
