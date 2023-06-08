@@ -19,7 +19,7 @@ class RuntimeLexer implements LexerInterface
 
     protected string $regex;
 
-    protected array $positionToTokenType;
+    protected array $markToTypeMap;
 
     public function __construct(array $patterns, Closure $produceTokenUsing, ?string $skip = null, ?UnitEnum $errorType = null)
     {
@@ -27,8 +27,22 @@ class RuntimeLexer implements LexerInterface
         $this->produceTokenUsing = $produceTokenUsing;
         $this->skip = $skip;
         $this->errorType = $errorType;
-        $this->regex = '/(' . implode(')|(', array_keys($patterns)) . ')/A';
-        $this->positionToTokenType = array_values($patterns);
+
+        $regex = '/';
+        $mark = 'a';
+        $this->markToTypeMap = [];
+
+        foreach ($patterns as $pattern => $type) {
+            if ($regex !== '/') {
+                $regex .= '|';
+            }
+
+            $regex .= "(?<{$mark}>{$pattern})";
+            $this->markToTypeMap[$mark] = $type;
+            $mark++;
+        }
+
+        $this->regex = $regex . '/A';
     }
 
     public function tokenise(string $input): array
@@ -53,9 +67,9 @@ class RuntimeLexer implements LexerInterface
 
                 $token = $this->findNextMatchAndProduceError($input, $offset);
             } else {
-                for ($i = 1; null === $matches[$i]; ++$i);
+                for ($m = 'a'; null === $matches[$m]; $m++);
 
-                $token = [$matches[0], $this->positionToTokenType[$i - 1]];
+                $token = [$matches[$m], $this->markToTypeMap[$m]];
             }
 
             $tokens[] = call_user_func($this->produceTokenUsing, $token[1], $token[0]);
