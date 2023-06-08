@@ -7,7 +7,3 @@ All notable changes to Lexical will be documented in this file.
 - Initial release.
 
 **Full Changelog**: https://github.com/ryangjchandler/lexical/commits/v0.1.0
-
-## `v0.1.0`
-
-- Initial release.
