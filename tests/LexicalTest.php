@@ -51,38 +51,38 @@ it('produces the specified error token type when encountering an unexpected char
 #[Lexer(skip: '[ \t\n\f]+')]
 enum MathTestToken
 {
-    #[Regex("[0-9]+")]
+    #[Regex('[0-9]+')]
     case Number;
 
-    #[Literal("+")]
+    #[Literal('+')]
     case Add;
 
-    #[Literal("-")]
+    #[Literal('-')]
     case Subtract;
 
-    #[Literal("*")]
+    #[Literal('*')]
     case Multiply;
 
-    #[Literal("/")]
+    #[Literal('/')]
     case Divide;
 }
 
 #[Lexer(skip: '[ \t\n\f]+')]
 enum MathTestTokenWithError
 {
-    #[Regex("[0-9]+")]
+    #[Regex('[0-9]+')]
     case Number;
 
-    #[Literal("+")]
+    #[Literal('+')]
     case Add;
 
-    #[Literal("-")]
+    #[Literal('-')]
     case Subtract;
 
-    #[Literal("*")]
+    #[Literal('*')]
     case Multiply;
 
-    #[Literal("/")]
+    #[Literal('/')]
     case Divide;
 
     #[Error]
