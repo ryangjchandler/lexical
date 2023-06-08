@@ -3,17 +3,17 @@
 namespace RyanChandler\Lexical;
 
 use Closure;
-use UnitEnum;
 use Exception;
 use ReflectionEnum;
-use ReflectionException;
 use ReflectionEnumUnitCase;
+use ReflectionException;
 use RyanChandler\Lexical\Attributes\Error;
 use RyanChandler\Lexical\Attributes\Lexer;
-use RyanChandler\Lexical\Attributes\Regex;
 use RyanChandler\Lexical\Attributes\Literal;
-use RyanChandler\Lexical\Lexers\RuntimeLexer;
+use RyanChandler\Lexical\Attributes\Regex;
 use RyanChandler\Lexical\Contracts\LexerInterface;
+use RyanChandler\Lexical\Lexers\RuntimeLexer;
+use UnitEnum;
 
 class LexicalBuilder
 {
@@ -65,6 +65,7 @@ class LexicalBuilder
 
             if ($literal !== null) {
                 $patterns[preg_quote($literal->newInstance()->literal, '/')] = $case;
+
                 continue;
             }
 
@@ -72,6 +73,7 @@ class LexicalBuilder
 
             if ($regex !== null) {
                 $patterns[$regex->newInstance()->pattern] = $case;
+
                 continue;
             }
 
@@ -79,6 +81,7 @@ class LexicalBuilder
 
             if ($error !== null) {
                 $errorCase = $case;
+
                 continue;
             }
         }

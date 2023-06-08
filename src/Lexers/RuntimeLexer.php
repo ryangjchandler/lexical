@@ -42,7 +42,7 @@ class RuntimeLexer implements LexerInterface
             $mark++;
         }
 
-        $this->regex = $regex . '/A';
+        $this->regex = $regex.'/A';
     }
 
     public function tokenise(string $input): array
@@ -56,6 +56,7 @@ class RuntimeLexer implements LexerInterface
 
                 if (isset($skips[0])) {
                     $offset += strlen($skips[0]);
+
                     continue;
                 }
             }
