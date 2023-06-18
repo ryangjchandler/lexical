@@ -13,7 +13,7 @@ class RuntimeLexer implements LexerInterface
 
     protected Closure $produceTokenUsing;
 
-    protected string $skip;
+    protected ?string $skip;
 
     protected ?UnitEnum $errorType = null;
 
@@ -80,12 +80,16 @@ class RuntimeLexer implements LexerInterface
         return $tokens;
     }
 
-    protected function findNextMatchAndProduceError(string $input, int &$offset): array
+    protected function findNextMatchAndProduceError(string $input, int $offset): array
     {
         $patterns = [...array_keys($this->patterns), $this->skip];
         $offsets = [];
 
         foreach ($patterns as $pattern) {
+            if ($pattern === null) {
+                continue;
+            }
+
             if (! preg_match('/'.$pattern.'/', $input, $matches, PREG_OFFSET_CAPTURE, $offset)) {
                 continue;
             }
@@ -96,8 +100,6 @@ class RuntimeLexer implements LexerInterface
         $skipped = count($offsets) > 0
             ? substr($input, $offset, min($offsets) - $offset)
             : substr($input, $offset, strlen($input) - $offset);
-
-        $offset = count($offsets) > 0 ? min($offsets) : ($offset + (strlen($input) - $offset));
 
         return [$skipped, $this->errorType];
     }
