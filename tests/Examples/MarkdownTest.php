@@ -22,6 +22,6 @@ test('markdown > can tokenise bold', function () {
         ->toBe([
             [MarkdownTokenType::Text, 'Lorem '],
             [MarkdownTokenType::Bold, '**ipsum**'],
-            [MarkdownTokenType::Text, ' ahmet sun']
+            [MarkdownTokenType::Text, ' ahmet sun'],
         ]);
 });
