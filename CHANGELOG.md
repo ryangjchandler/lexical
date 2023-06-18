@@ -2,6 +2,14 @@
 
 All notable changes to Lexical will be documented in this file.
 
+## v0.1.2 - 2023-06-18
+
+### What's Changed
+
+- fix: offset handling error malfunction by @ryangjchandler in https://github.com/ryangjchandler/lexical/pull/4
+
+**Full Changelog**: https://github.com/ryangjchandler/lexical/compare/v0.1.1...v0.1.2
+
 ## v0.1.1 - 2023-06-08
 
 - Refactored `RuntimeLexer` to use named capture groups.
