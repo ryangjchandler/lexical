@@ -21,7 +21,7 @@ class RuntimeLexer implements LexerInterface
 
     protected array $markToTypeMap;
 
-    public function __construct(array $patterns, Closure $produceTokenUsing, ?string $skip = null, ?UnitEnum $errorType = null)
+    public function __construct(array $patterns, Closure $produceTokenUsing, string $skip = null, UnitEnum $errorType = null)
     {
         $this->patterns = $patterns;
         $this->produceTokenUsing = $produceTokenUsing;
