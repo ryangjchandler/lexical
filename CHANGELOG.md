@@ -2,6 +2,10 @@
 
 All notable changes to Lexical will be documented in this file.
 
+## v0.1.3 - 2023-07-28
+
+- Make `Lexer::$skip` nullable.
+
 ## v0.1.2 - 2023-06-18
 
 ### What's Changed
