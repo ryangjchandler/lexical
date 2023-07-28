@@ -8,7 +8,7 @@ use Attribute;
 class Lexer
 {
     public function __construct(
-        public readonly string $skip = '',
+        public readonly ?string $skip = null,
     ) {
     }
 }
