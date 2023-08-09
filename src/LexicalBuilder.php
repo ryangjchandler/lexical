@@ -23,7 +23,7 @@ class LexicalBuilder
 
     public function __construct()
     {
-        $this->produceTokenUsing = fn (UnitEnum $type, string $literal) => [$type, $literal];
+        $this->produceTokenUsing = fn (UnitEnum $type, string $literal, Span $span) => [$type, $literal, $span];
     }
 
     public function readTokenTypesFrom(string $class): static

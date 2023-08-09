@@ -5,6 +5,7 @@ namespace RyanChandler\Lexical\Lexers;
 use Closure;
 use RyanChandler\Lexical\Contracts\LexerInterface;
 use RyanChandler\Lexical\Exceptions\UnexpectedCharacterException;
+use RyanChandler\Lexical\Span;
 use UnitEnum;
 
 class RuntimeLexer implements LexerInterface
@@ -73,8 +74,9 @@ class RuntimeLexer implements LexerInterface
                 $token = [$matches[$m], $this->markToTypeMap[$m]];
             }
 
-            $tokens[] = call_user_func($this->produceTokenUsing, $token[1], $token[0]);
+            $start = $offset;
             $offset += strlen($token[0]);
+            $tokens[] = call_user_func($this->produceTokenUsing, $token[1], $token[0], new Span($start, $offset));
         }
 
         return $tokens;
