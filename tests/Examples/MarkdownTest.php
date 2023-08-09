@@ -3,6 +3,7 @@
 use RyanChandler\Lexical\Attributes\Error;
 use RyanChandler\Lexical\Attributes\Regex;
 use RyanChandler\Lexical\LexicalBuilder;
+use RyanChandler\Lexical\Span;
 
 enum MarkdownTokenType
 {
@@ -19,9 +20,9 @@ test('markdown > can tokenise bold', function () {
         ->build();
 
     expect($lexer->tokenise('Lorem **ipsum** ahmet sun'))
-        ->toBe([
-            [MarkdownTokenType::Text, 'Lorem '],
-            [MarkdownTokenType::Bold, '**ipsum**'],
-            [MarkdownTokenType::Text, ' ahmet sun'],
+        ->toMatchArray([
+            [MarkdownTokenType::Text, 'Lorem ', new Span(0, 6)],
+            [MarkdownTokenType::Bold, '**ipsum**', new Span(6, 15)],
+            [MarkdownTokenType::Text, ' ahmet sun', new Span(15, 25)],
         ]);
 });

@@ -69,10 +69,10 @@ The `readTokenTypesFrom()` method is used to tell the builder where we should lo
 Then it's just a case of calling the `tokenise()` method on the lexer object to retrieve an array of tokens.
 
 ```php
-$tokens = $lexer->tokenise('1+2'); // -> [[TokenType::Number, '1'], [TokenType::Add, '+'], [TokenType::Number, '2']]
+$tokens = $lexer->tokenise('1+2'); // -> [[TokenType::Number, '1', Span(0, 1)], [TokenType::Add, '+', Span(1, 2)], [TokenType::Number, '2', Span(2, 3)]]
 ```
 
-The `tokenise()` method returns a list of tuples, where the first item is the "type" (`TokenType` in this example) and the second item is the "literal" (a string containing the matched characters).
+The `tokenise()` method returns a list of tuples, where the first item is the "type" (`TokenType` in this example), the second item is the "literal" (a string containing the matched characters) and the third item is the "span" of the token (the start and end positions in the original string).
 
 ### Skipping whitespace and other patterns
 
@@ -130,12 +130,13 @@ class Token
     public function __construct(
         public readonly TokenType $type,
         public readonly string $literal,
+        public readonly Span $span,
     ) {}
 }
 
 $lexer = (new LexicalBuilder)
     ->readTokenTypesFrom(TokenType::class)
-    ->produceTokenUsing(fn (TokenType $type, string $literal) => new Token($type, $literal))
+    ->produceTokenUsing(fn (TokenType $type, string $literal, Span $span) => new Token($type, $literal, $span))
     ->build();
 
 $lexer->tokenise('1 + 2'); // -> [Token { type: TokenType::Number, literal: "1" }, ...]

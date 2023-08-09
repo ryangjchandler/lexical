@@ -6,6 +6,7 @@ use RyanChandler\Lexical\Attributes\Literal;
 use RyanChandler\Lexical\Attributes\Regex;
 use RyanChandler\Lexical\Exceptions\UnexpectedCharacterException;
 use RyanChandler\Lexical\LexicalBuilder;
+use RyanChandler\Lexical\Span;
 
 it('can produce the correct tokens for the given math expression', function () {
     $lexer = (new LexicalBuilder)
@@ -13,16 +14,16 @@ it('can produce the correct tokens for the given math expression', function () {
         ->build();
 
     expect($lexer->tokenise('1 + 2 - 3 * 4 / 5'))
-        ->toBe([
-            [MathTestToken::Number, '1'],
-            [MathTestToken::Add, '+'],
-            [MathTestToken::Number, '2'],
-            [MathTestToken::Subtract, '-'],
-            [MathTestToken::Number, '3'],
-            [MathTestToken::Multiply, '*'],
-            [MathTestToken::Number, '4'],
-            [MathTestToken::Divide, '/'],
-            [MathTestToken::Number, '5'],
+        ->toMatchArray([
+            [MathTestToken::Number, '1', new Span(0, 1)],
+            [MathTestToken::Add, '+', new Span(2, 3)],
+            [MathTestToken::Number, '2', new Span(4, 5)],
+            [MathTestToken::Subtract, '-', new Span(6, 7)],
+            [MathTestToken::Number, '3', new Span(8, 9)],
+            [MathTestToken::Multiply, '*', new Span(10, 11)],
+            [MathTestToken::Number, '4', new Span(12, 13)],
+            [MathTestToken::Divide, '/', new Span(14, 15)],
+            [MathTestToken::Number, '5', new Span(16, 17)],
         ]);
 });
 
@@ -41,10 +42,10 @@ it('produces the specified error token type when encountering an unexpected char
         ->build();
 
     expect($lexer->tokenise('1 % 2'))
-        ->toBe([
-            [MathTestTokenWithError::Number, '1'],
-            [MathTestTokenWithError::Error, '%'],
-            [MathTestTokenWithError::Number, '2'],
+        ->toMatchArray([
+            [MathTestTokenWithError::Number, '1', new Span(0, 1)],
+            [MathTestTokenWithError::Error, '%', new Span(2, 3)],
+            [MathTestTokenWithError::Number, '2', new Span(4, 5)],
         ]);
 });
 
