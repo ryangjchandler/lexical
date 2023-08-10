@@ -1,0 +1,85 @@
+<?php
+
+namespace {{ namespace }};
+
+use {{ input }};
+use RyanChandler\Lexical\Contracts\LexerInterface;
+use RyanChandler\Lexical\Exceptions\UnexpectedCharacterException;
+use RyanChandler\Lexical\Span;
+
+// This class is auto-generated.
+class {{ class }} implements LexerInterface
+{
+    const PATTERNS = [
+{{ patterns }}
+    ];
+
+    const REGEX = '{{ regex }}';
+    const SKIP = {{ skip }};
+
+    const MARK_TO_TYPE_MAP = [
+{{ mark_to_type_map }}
+    ];
+
+    const ERROR_TYPE = {{ error_type }};
+
+    public function tokenise(string $input): array
+    {
+        $tokens = [];
+        $offset = 0;
+
+        while (isset($input[$offset])) {
+            if (self::SKIP !== null) {
+                preg_match('/'.self::SKIP.'/A', $input, $skips, 0, $offset);
+
+                if (isset($skips[0])) {
+                    $offset += strlen($skips[0]);
+
+                    continue;
+                }
+            }
+
+            if (! preg_match(self::REGEX, $input, $matches, PREG_UNMATCHED_AS_NULL, $offset)) {
+                if (self::ERROR_TYPE === null) {
+                    throw UnexpectedCharacterException::make($input[$offset], $offset);
+                }
+
+                $token = $this->findNextMatchAndProduceError($input, $offset);
+            } else {
+                for ($m = 'a'; null === $matches[$m]; $m++);
+
+                $token = [$matches[$m], self::MARK_TO_TYPE_MAP[$m]];
+            }
+
+            $start = $offset;
+            $offset += strlen($token[0]);
+            $tokens[] = [$token[1], $token[0], new Span($start, $offset)];
+        }
+
+        return $tokens;
+    }
+
+    protected function findNextMatchAndProduceError(string $input, int $offset): array
+    {
+        $patterns = [...array_keys(self::PATTERNS), self::SKIP];
+        $offsets = [];
+
+        foreach ($patterns as $pattern) {
+            if ($pattern === null) {
+                continue;
+            }
+
+            if (! preg_match('/'.$pattern.'/', $input, $matches, PREG_OFFSET_CAPTURE, $offset)) {
+                continue;
+            }
+
+            $offsets[] = $matches[0][1];
+        }
+
+        $skipped = count($offsets) > 0
+            ? substr($input, $offset, min($offsets) - $offset)
+            : substr($input, $offset, strlen($input) - $offset);
+
+        return [$skipped, self::ERROR_TYPE];
+    }
+}
