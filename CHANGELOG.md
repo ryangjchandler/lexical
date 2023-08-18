@@ -2,6 +2,14 @@
 
 All notable changes to Lexical will be documented in this file.
 
+## v0.2.0 - 2023-08-18
+
+### What's Changed
+
+- feature: track token spans (start/end offsets) by @ryangjchandler in https://github.com/ryangjchandler/lexical/pull/6
+
+**Full Changelog**: https://github.com/ryangjchandler/lexical/compare/v0.1.3...v0.2.0
+
 ## v0.1.3 - 2023-07-28
 
 - Make `Lexer::$skip` nullable.
