@@ -49,6 +49,21 @@ it('produces the specified error token type when encountering an unexpected char
         ]);
 });
 
+it('can ignore white spaces', function () {
+    $lexer = (new LexicalBuilder)
+        ->readTokenTypesFrom(MathTestToken::class)
+        ->build();
+
+    expect($lexer->tokenise("\t1 + 2\n -   3"))
+        ->toMatchArray([
+            [MathTestToken::Number, '1', new Span(1, 2)],
+            [MathTestToken::Add, '+', new Span(3, 4)],
+            [MathTestToken::Number, '2', new Span(5, 6)],
+            [MathTestToken::Subtract, '-', new Span(8, 9)],
+            [MathTestToken::Number, '3', new Span(12, 13)],
+        ]);
+});
+
 #[Lexer(skip: '[ \t\n\f]+')]
 enum MathTestToken
 {
