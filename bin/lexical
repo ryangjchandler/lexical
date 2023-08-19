@@ -1,0 +1,177 @@
+#!/usr/bin/env php
+<?php
+
+namespace RyanChandler\Lexical;
+
+use Exception;
+use ReflectionEnum;
+use ReflectionEnumUnitCase;
+use RyanChandler\Lexical\Attributes\Error;
+use RyanChandler\Lexical\Attributes\Lexer;
+use RyanChandler\Lexical\Attributes\Regex;
+use RyanChandler\Lexical\Attributes\Literal;
+
+$vendorPath = dirname(__DIR__, 4) . '/vendor/autoload.php';
+$localPath = dirname(__DIR__) . '/vendor/autoload.php';
+
+require_once file_exists($vendorPath) ? $vendorPath : $localPath;
+
+function main(int $argc, array $argv): int {
+    if ($argc === 0 || has_help_flags($argv)) {
+        help();
+        return 0;
+    }
+
+    $input = get_option_value('--input', '-i', $argv);
+
+    if ($input === null) {
+        error("missing required option --input (-i)");
+        return 1;
+    }
+
+    $output = get_option_value('--output', '-o', $argv);
+
+    if ($output === null) {
+        error("missing required option --output (-o)");
+        return 1;
+    }
+
+    $path = get_option_value('--path', '-p', $argv);
+
+    if ($path === null) {
+        error("missing required option --path (-p)");
+        return 1;
+    }
+
+    try {
+        $reflection = new ReflectionEnum($input);
+    } catch (Exception $e) {
+        error("input {$input} must be an enum");
+        return 1;
+    }
+
+    $derived = $reflection->getAttributes(Lexer::class)[0] ?? null;
+    $skip = null;
+
+    if ($derived !== null) {
+        $skip = $derived->newInstance()->skip;
+    }
+
+    $cases = $input::cases();
+    $errorCase = null;
+    $patterns = [];
+
+    foreach ($cases as $case) {
+        $caseReflection = new ReflectionEnumUnitCase($input, $case->name);
+        $literal = $caseReflection->getAttributes(Literal::class)[0] ?? null;
+
+        if ($literal !== null) {
+            $patterns[preg_quote($literal->newInstance()->literal, '/')] = $case;
+
+            continue;
+        }
+
+        $regex = $caseReflection->getAttributes(Regex::class)[0] ?? null;
+
+        if ($regex !== null) {
+            $patterns[$regex->newInstance()->pattern] = $case;
+
+            continue;
+        }
+
+        $error = $caseReflection->getAttributes(Error::class)[0] ?? null;
+
+        if ($error !== null) {
+            $errorCase = $case;
+
+            continue;
+        }
+    }
+
+    $regex = '/';
+    $mark = 'a';
+    $markToTypeMap = [];
+
+    foreach ($patterns as $pattern => $type) {
+        if ($regex !== '/') {
+            $regex .= '|';
+        }
+
+        $regex .= "(?<{$mark}>{$pattern})";
+        $markToTypeMap[$mark] = $type;
+        $mark++;
+    }
+
+    $regex = $regex . '/A';
+    $class = substr($output, strrpos($output, '\\') + 1);
+    $namespace = substr($output, 0, strlen($output) - strlen($class) - 1);
+    $patternsReplacement = '';
+
+    foreach ($patterns as $pattern => $kind) {
+        $patternsReplacement .= '        ';
+        $patternsReplacement .= '"' . $pattern . '"';
+        $patternsReplacement .= ' => ';
+        $patternsReplacement .= '\\' . $kind::class . '::' . $kind->name;
+        $patternsReplacement .= ",\n";
+    }
+
+    $markToTypeMapReplacement = '';
+
+    foreach ($markToTypeMap as $mark => $kind) {
+        $markToTypeMapReplacement .= '        ';
+        $markToTypeMapReplacement .= '"' . $mark . '"';
+        $markToTypeMapReplacement .= ' => ';
+        $markToTypeMapReplacement .= '\\' . $kind::class . '::' . $kind->name;
+        $markToTypeMapReplacement .= ",\n";
+    }
+
+    $stub = file_get_contents(__DIR__ . '/lexer.stub');
+    $stub = str_replace('{{ class }}', $class, $stub);
+    $stub = str_replace('{{ namespace }}', $namespace, $stub);
+    $stub = str_replace('{{ input }}', $input, $stub);
+    $stub = str_replace('{{ patterns }}', $patternsReplacement, $stub);
+    $stub = str_replace('{{ regex }}', $regex, $stub);
+    $stub = str_replace('{{ skip }}', $skip === null ? 'null' : "'{$skip}'", $stub);
+    $stub = str_replace('{{ mark_to_type_map }}', $markToTypeMapReplacement, $stub);
+    $stub = str_replace('{{ error_type }}', $errorCase === null ? 'null' : ('\\' . $errorCase::class . '::' . $errorCase->name), $stub);
+
+    file_put_contents($path, $stub);
+
+    echo "Lexer generated.\n";
+
+    return 0;
+}
+
+function get_option_value(string $long, string $short, array $argv): ?string {
+    $index = array_search($short, $argv) !== false ? array_search($short, $argv) : array_search($long, $argv);
+
+    if ($index === false) {
+        return null;
+    }
+
+    if (! isset($argv[$index + 1])) {
+        return null;
+    }
+
+    return $argv[$index + 1];
+}
+
+function has_help_flags(array $argv): bool {
+    return in_array('-h', $argv) || in_array('--help', $argv);
+}
+
+function error(string $message) {
+    echo "\033[31;1merror:\033[0m {$message}\n";
+}
+
+function help() {
+    echo "\033[1musage:\033[0m lexical [options]\n";
+    echo "\n";
+    echo "\033[1mOPTIONS:\033[0m\n";
+    echo "    -i, --input    Fully-qualified class name to source tokens from.    (e.g. App\\Lexer\\TokenKind)\n";
+    echo "    -o, --output   Fully-qualified class name of generated lexer.       (e.g. App\\Lexer\\Lexer)\n";
+    echo "    -p, --path     Path to write source code for generated lexer.       (e.g. ./app/Lexer/Lexer.php)\n";
+    echo "    -h, --help     Display this help message.\n";
+}
+
+return main($argc - 1, array_slice($argv, 1));

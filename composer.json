@@ -44,6 +44,7 @@
             "phpstan/extension-installer": true
         }
     },
+    "bin": "bin/lexical",
     "minimum-stability": "dev",
     "prefer-stable": true
 }
