@@ -9,6 +9,5 @@ class Literal
 {
     public function __construct(
         public readonly string $literal,
-    ) {
-    }
+    ) {}
 }
