@@ -2,6 +2,7 @@
 
 namespace RyanChandler\Lexical\Tests\Compiler;
 
+use RyanChandler\Lexical\Tests\Compiler\TokenKind;
 use RyanChandler\Lexical\Contracts\LexerInterface;
 use RyanChandler\Lexical\Exceptions\UnexpectedCharacterException;
 use RyanChandler\Lexical\Span;
@@ -10,7 +11,7 @@ use RyanChandler\Lexical\Span;
 class Lexer implements LexerInterface
 {
     const PATTERNS = [
-        '[0-9]+' => \RyanChandler\Lexical\Tests\Compiler\TokenKind::Number,
+        "[0-9]+" => \RyanChandler\Lexical\Tests\Compiler\TokenKind::Number,
         "\+" => \RyanChandler\Lexical\Tests\Compiler\TokenKind::Add,
         "\-" => \RyanChandler\Lexical\Tests\Compiler\TokenKind::Subtract,
         "\*" => \RyanChandler\Lexical\Tests\Compiler\TokenKind::Multiply,
@@ -19,15 +20,14 @@ class Lexer implements LexerInterface
     ];
 
     const REGEX = '/(?<a>[0-9]+)|(?<b>\+)|(?<c>\-)|(?<d>\*)|(?<e>\/)/A';
-
     const SKIP = '[ \t\n\f]+';
 
     const MARK_TO_TYPE_MAP = [
-        'a' => \RyanChandler\Lexical\Tests\Compiler\TokenKind::Number,
-        'b' => \RyanChandler\Lexical\Tests\Compiler\TokenKind::Add,
-        'c' => \RyanChandler\Lexical\Tests\Compiler\TokenKind::Subtract,
-        'd' => \RyanChandler\Lexical\Tests\Compiler\TokenKind::Multiply,
-        'e' => \RyanChandler\Lexical\Tests\Compiler\TokenKind::Divide,
+        "a" => \RyanChandler\Lexical\Tests\Compiler\TokenKind::Number,
+        "b" => \RyanChandler\Lexical\Tests\Compiler\TokenKind::Add,
+        "c" => \RyanChandler\Lexical\Tests\Compiler\TokenKind::Subtract,
+        "d" => \RyanChandler\Lexical\Tests\Compiler\TokenKind::Multiply,
+        "e" => \RyanChandler\Lexical\Tests\Compiler\TokenKind::Divide,
 
     ];
 
