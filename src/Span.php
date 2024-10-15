@@ -5,8 +5,8 @@ namespace RyanChandler\Lexical;
 class Span
 {
     public function __construct(
-        protected int $start,
-        protected int $end,
+        public int $start,
+        public int $end,
     ) {
     }
 }
