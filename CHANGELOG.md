@@ -2,6 +2,12 @@
 
 All notable changes to Lexical will be documented in this file.
 
+## v0.2.1 - 2024-10-15
+
+* Make `Span` properties public.
+
+**Full Changelog**: https://github.com/ryangjchandler/lexical/compare/v0.2.0...v0.2.1
+
 ## v0.2.0 - 2023-08-18
 
 ### What's Changed
