@@ -9,6 +9,5 @@ class Lexer
 {
     public function __construct(
         public readonly ?string $skip = null,
-    ) {
-    }
+    ) {}
 }

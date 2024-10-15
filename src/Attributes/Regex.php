@@ -9,6 +9,5 @@ class Regex
 {
     public function __construct(
         public readonly string $pattern,
-    ) {
-    }
+    ) {}
 }

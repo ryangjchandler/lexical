@@ -22,7 +22,7 @@ class RuntimeLexer implements LexerInterface
 
     protected array $markToTypeMap;
 
-    public function __construct(array $patterns, Closure $produceTokenUsing, string $skip = null, UnitEnum $errorType = null)
+    public function __construct(array $patterns, Closure $produceTokenUsing, ?string $skip = null, ?UnitEnum $errorType = null)
     {
         $this->patterns = $patterns;
         $this->produceTokenUsing = $produceTokenUsing;
@@ -69,7 +69,7 @@ class RuntimeLexer implements LexerInterface
 
                 $token = $this->findNextMatchAndProduceError($input, $offset);
             } else {
-                for ($m = 'a'; null === $matches[$m]; $m++);
+                for ($m = 'a'; $matches[$m] === null; $m++);
 
                 $token = [$matches[$m], $this->markToTypeMap[$m]];
             }

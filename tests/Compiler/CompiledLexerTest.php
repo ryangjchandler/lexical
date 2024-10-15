@@ -9,7 +9,7 @@ beforeAll(function () {
 });
 
 it('can produce the correct tokens for the given math expression', function () {
-    $lexer = new Lexer();
+    $lexer = new Lexer;
 
     expect($lexer->tokenise('1 + 2 - 3 * 4 / 5'))
         ->toMatchArray([
