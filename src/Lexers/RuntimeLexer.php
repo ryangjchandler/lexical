@@ -91,7 +91,7 @@ class RuntimeLexer implements LexerInterface
 
             $result = $producer->produce($source);
 
-            $source->reset();
+            $source->rewind();
 
             if ($result === null) {
                 continue;

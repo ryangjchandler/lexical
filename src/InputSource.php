@@ -58,7 +58,7 @@ class InputSource
         $this->mark = $this->offset;
     }
 
-    public function reset(): void
+    public function rewind(): void
     {
         if ($this->mark === null) {
             return;

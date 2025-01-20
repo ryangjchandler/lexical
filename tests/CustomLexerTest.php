@@ -64,7 +64,7 @@ class StringLexer implements TolerantTokenProducerInterface
 
         while ($source->current() !== '"') {
             if ($source->isEof()) {
-                $source->reset();
+                $source->rewind();
 
                 return null;
             }
