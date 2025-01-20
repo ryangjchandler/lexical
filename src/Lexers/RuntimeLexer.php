@@ -4,31 +4,31 @@ namespace RyanChandler\Lexical\Lexers;
 
 use Closure;
 use RyanChandler\Lexical\Contracts\LexerInterface;
+use RyanChandler\Lexical\Contracts\TokenProducerInterface;
+use RyanChandler\Lexical\Contracts\TolerantTokenProducerInterface;
+use RyanChandler\Lexical\Exceptions\InvalidTokenProducerException;
 use RyanChandler\Lexical\Exceptions\UnexpectedCharacterException;
+use RyanChandler\Lexical\InputSource;
 use RyanChandler\Lexical\Span;
+use SplObjectStorage;
 use UnitEnum;
 
 class RuntimeLexer implements LexerInterface
 {
-    protected array $patterns;
-
-    protected Closure $produceTokenUsing;
-
-    protected ?string $skip;
-
-    protected ?UnitEnum $errorType = null;
-
     protected string $regex;
 
     protected array $markToTypeMap;
 
-    public function __construct(array $patterns, Closure $produceTokenUsing, ?string $skip = null, ?UnitEnum $errorType = null)
-    {
-        $this->patterns = $patterns;
-        $this->produceTokenUsing = $produceTokenUsing;
-        $this->skip = $skip;
-        $this->errorType = $errorType;
-
+    /**
+     * @param  SplObjectStorage<\UnitEnum, class-string<\RyanChandler\Lexical\Contracts\TokenProducerInterface>>  $customs
+     */
+    public function __construct(
+        protected array $patterns,
+        protected Closure $produceTokenUsing,
+        protected ?string $skip = null,
+        protected ?UnitEnum $errorType = null,
+        protected SplObjectStorage $customs = new SplObjectStorage,
+    ) {
         $regex = '/';
         $mark = 'a';
         $this->markToTypeMap = [];
@@ -48,41 +48,83 @@ class RuntimeLexer implements LexerInterface
 
     public function tokenise(string $input): array
     {
+        $source = new InputSource($input);
         $tokens = [];
-        $offset = 0;
 
-        while (isset($input[$offset])) {
+        while (! $source->isEof()) {
             if ($this->skip !== null) {
-                preg_match('/'.$this->skip.'/A', $input, $skips, 0, $offset);
+                $skips = $source->match('/'.$this->skip.'/A');
 
                 if (isset($skips[0])) {
-                    $offset += strlen($skips[0]);
+                    $source->skip(strlen($skips[0]));
 
                     continue;
                 }
             }
 
-            if (! preg_match($this->regex, $input, $matches, PREG_UNMATCHED_AS_NULL, $offset)) {
-                if ($this->errorType === null) {
-                    throw UnexpectedCharacterException::make($input[$offset], $offset);
-                }
+            $token = $this->nextMatch($source);
 
-                $token = $this->findNextMatchAndProduceError($input, $offset);
-            } else {
-                for ($m = 'a'; $matches[$m] === null; $m++);
+            $start = $source->offset();
 
-                $token = [$matches[$m], $this->markToTypeMap[$m]];
-            }
+            $source->skip(strlen($token[0]));
 
-            $start = $offset;
-            $offset += strlen($token[0]);
-            $tokens[] = call_user_func($this->produceTokenUsing, $token[1], $token[0], new Span($start, $offset));
+            $tokens[] = call_user_func($this->produceTokenUsing, $token[1], $token[0], new Span($start, $source->offset()));
         }
 
         return $tokens;
     }
 
-    protected function findNextMatchAndProduceError(string $input, int $offset): array
+    protected function nextMatch(InputSource $source): array
+    {
+        $matches = $source->match($this->regex, PREG_UNMATCHED_AS_NULL);
+
+        if ((bool) $matches) {
+            for ($m = 'a'; $matches[$m] === null; $m++);
+
+            return [$matches[$m], $this->markToTypeMap[$m]];
+        }
+
+        foreach ($this->customs as $case) {
+            $source->mark();
+
+            $producer = $this->createProducer($this->customs[$case]);
+
+            $result = $producer->produce($source);
+
+            $source->rewind();
+
+            if ($result === null) {
+                continue;
+            }
+
+            return [$result, $case];
+        }
+
+        if ($this->errorType === null) {
+            throw UnexpectedCharacterException::make($source->current(), $source->offset());
+        }
+
+        return $this->findNextMatchAndProduceError($source);
+    }
+
+    protected function createProducer(string $producer): TokenProducerInterface|TolerantTokenProducerInterface
+    {
+        if (! class_exists($producer)) {
+            throw InvalidTokenProducerException::classDoesntExist($producer);
+        }
+
+        $producer = new $producer;
+
+        if ($this->errorType !== null && ! $producer instanceof TolerantTokenProducerInterface) {
+            throw InvalidTokenProducerException::classDoesntImplementInterface($producer::class, TolerantTokenProducerInterface::class);
+        } elseif (! $producer instanceof TokenProducerInterface) {
+            throw InvalidTokenProducerException::classDoesntImplementInterface($producer::class, TokenProducerInterface::class);
+        }
+
+        return $producer;
+    }
+
+    protected function findNextMatchAndProduceError(InputSource $source): array
     {
         $patterns = [...array_keys($this->patterns), $this->skip];
         $offsets = [];
@@ -92,16 +134,29 @@ class RuntimeLexer implements LexerInterface
                 continue;
             }
 
-            if (! preg_match('/'.$pattern.'/', $input, $matches, PREG_OFFSET_CAPTURE, $offset)) {
+            $matches = $source->match('/'.$pattern.'/', PREG_OFFSET_CAPTURE);
+
+            if (! $matches) {
                 continue;
             }
 
             $offsets[] = $matches[0][1];
         }
 
+        foreach ($this->customs as $case) {
+            $producer = $this->createProducer($this->customs[$case]);
+            $offset = $producer->canProduce($source);
+
+            if ($offset === false) {
+                continue;
+            }
+
+            $offsets[] = $offset;
+        }
+
         $skipped = count($offsets) > 0
-            ? substr($input, $offset, min($offsets) - $offset)
-            : substr($input, $offset, strlen($input) - $offset);
+            ? $source->substr($source->offset(), min($offsets) - $source->offset())
+            : $source->substr($source->offset(), $source->length() - $source->offset());
 
         return [$skipped, $this->errorType];
     }

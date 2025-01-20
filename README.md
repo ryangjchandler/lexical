@@ -142,6 +142,89 @@ $lexer = (new LexicalBuilder)
 $lexer->tokenise('1 + 2'); // -> [Token { type: TokenType::Number, literal: "1" }, ...]
 ```
 
+### Token Producers
+
+Regular expressions and literal tokens can get you quite far when it comes to tokenisation, but there are scenarios where it would be easier to write "real" code to tokenise your input.
+
+Lexical makes this possible by providing a Token Producer API. Token producers are regular PHP objects that implement the `RyanChandler\Lexical\Contracts\TokenProviderInterface` or `RyanChandler\Lexical\Contracts\TolerantTokenProviderInterface` interfaces.
+
+They are attached to your token types using the `RyanChandler\Lexical\Attributes\Custom` attribute, passing through the fully-qualified name of the token producer class.
+
+```php
+use RyanChandler\Lexical\Attributes\Custom;
+use RyanChandler\Lexical\InputSource;
+
+enum Literals
+{
+    #[Custom(StringTokenProducer::class)]
+    case String;
+}
+
+class StringTokenProducer implements TokenProducerInterface
+{
+    public function produce(InputSource $source): ?string
+    {
+        // 
+    }
+}
+```
+
+The `InputSource` object provided to the `produce()` method can be used to determine whether or not a token can be produced at the current offset. It comes with a range of utility methods such as `current()`, `peek()` and `match()`.
+
+If your token type has an `Error` case defined, your token producer will need to implement the `TolerantTokenProducerInterface` instead. This interface has an additional method, `canProduce()`, which is used to determine whether or not the token can be seen anywhere in the remaining input.
+
+Here's an example token producer that tokenises double-quoted strings.
+
+```php
+class StringTokenProducer implements TolerantTokenProducerInterface
+{
+    public function canProduce(InputSource $source): int|false
+    {
+        $matches = $source->match('/"/', PREG_OFFSET_CAPTURE);
+
+        if (! $matches) {
+            return false;
+        }
+
+        return $matches[0][1];
+    }
+
+    public function produce(InputSource $source): ?string
+    {
+        // If we're not looking at a double quote, return since we can't produce a token here.
+        if ($source->current() !== '"') {
+            return null;
+        }
+
+        // Place an offset marker in case we need to rewind at any point.
+        $source->mark();
+
+        // Consume the " character.
+        $token = $source->consume();
+
+        while ($source->current() !== '"') {
+            // If we reach the end of the file before we find a closing double-quote,
+            // we can rewind to the marker and return early.
+            if ($source->isEof()) {
+                $source->rewind();
+
+                return null;
+            }
+
+            // Consume the current character.
+            $token .= $source->consume();
+        }
+
+        // If we reach this point, we must be at a double-quote character since the
+        // loop above has finished and we haven't returned yet.
+        $token .= $source->consume();
+
+        // Return the consumed text and let the Lexer handle the rest.
+        return $token;
+    }
+}
+```
+
 ## Testing
 
 ```bash

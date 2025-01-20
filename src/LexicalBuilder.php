@@ -7,12 +7,14 @@ use Exception;
 use ReflectionEnum;
 use ReflectionEnumUnitCase;
 use ReflectionException;
+use RyanChandler\Lexical\Attributes\Custom;
 use RyanChandler\Lexical\Attributes\Error;
 use RyanChandler\Lexical\Attributes\Lexer;
 use RyanChandler\Lexical\Attributes\Literal;
 use RyanChandler\Lexical\Attributes\Regex;
 use RyanChandler\Lexical\Contracts\LexerInterface;
 use RyanChandler\Lexical\Lexers\RuntimeLexer;
+use SplObjectStorage;
 use UnitEnum;
 
 class LexicalBuilder
@@ -58,6 +60,7 @@ class LexicalBuilder
         $cases = $this->readDefinitionsFrom::cases();
         $errorCase = null;
         $patterns = [];
+        $customs = new SplObjectStorage;
 
         foreach ($cases as $case) {
             $caseReflection = new ReflectionEnumUnitCase($this->readDefinitionsFrom, $case->name);
@@ -77,6 +80,12 @@ class LexicalBuilder
                 continue;
             }
 
+            $custom = $caseReflection->getAttributes(Custom::class)[0] ?? null;
+
+            if ($custom !== null) {
+                $customs->attach($case, $custom->newInstance()->lexer);
+            }
+
             $error = $caseReflection->getAttributes(Error::class)[0] ?? null;
 
             if ($error !== null) {
@@ -86,6 +95,6 @@ class LexicalBuilder
             }
         }
 
-        return new RuntimeLexer($patterns, $this->produceTokenUsing, $skip, $errorCase);
+        return new RuntimeLexer($patterns, $this->produceTokenUsing, $skip, $errorCase, $customs);
     }
 }
