@@ -11,7 +11,7 @@ use Attribute;
 class Custom
 {
     /**
-     * @param class-string<T> $lexer
+     * @param  class-string<T>  $lexer
      */
     public function __construct(
         public readonly string $lexer

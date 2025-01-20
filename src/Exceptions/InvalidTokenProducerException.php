@@ -3,7 +3,6 @@
 namespace RyanChandler\Lexical\Exceptions;
 
 use Exception;
-use RyanChandler\Lexical\Contracts\TokenProducerInterface;
 
 class InvalidTokenProducerException extends Exception
 {

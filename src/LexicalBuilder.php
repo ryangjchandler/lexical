@@ -60,7 +60,7 @@ class LexicalBuilder
         $cases = $this->readDefinitionsFrom::cases();
         $errorCase = null;
         $patterns = [];
-        $customs = new SplObjectStorage();
+        $customs = new SplObjectStorage;
 
         foreach ($cases as $case) {
             $caseReflection = new ReflectionEnumUnitCase($this->readDefinitionsFrom, $case->name);

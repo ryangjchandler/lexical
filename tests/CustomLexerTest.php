@@ -4,7 +4,6 @@ use RyanChandler\Lexical\Attributes\Custom;
 use RyanChandler\Lexical\Attributes\Error;
 use RyanChandler\Lexical\Attributes\Lexer;
 use RyanChandler\Lexical\Attributes\Regex;
-use RyanChandler\Lexical\Contracts\TokenProducerInterface;
 use RyanChandler\Lexical\Contracts\TolerantTokenProducerInterface;
 use RyanChandler\Lexical\InputSource;
 use RyanChandler\Lexical\LexicalBuilder;

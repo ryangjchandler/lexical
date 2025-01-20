@@ -20,7 +20,7 @@ class RuntimeLexer implements LexerInterface
     protected array $markToTypeMap;
 
     /**
-     * @param SplObjectStorage<\UnitEnum, class-string<\RyanChandler\Lexical\Contracts\TokenProducerInterface>> $customs
+     * @param  SplObjectStorage<\UnitEnum, class-string<\RyanChandler\Lexical\Contracts\TokenProducerInterface>>  $customs
      */
     public function __construct(
         protected array $patterns,
@@ -78,7 +78,7 @@ class RuntimeLexer implements LexerInterface
     {
         $matches = $source->match($this->regex, PREG_UNMATCHED_AS_NULL);
 
-        if (!! $matches) {
+        if ((bool) $matches) {
             for ($m = 'a'; $matches[$m] === null; $m++);
 
             return [$matches[$m], $this->markToTypeMap[$m]];
@@ -134,7 +134,7 @@ class RuntimeLexer implements LexerInterface
                 continue;
             }
 
-            $matches = $source->match('/' . $pattern . '/', PREG_OFFSET_CAPTURE);
+            $matches = $source->match('/'.$pattern.'/', PREG_OFFSET_CAPTURE);
 
             if (! $matches) {
                 continue;
@@ -146,7 +146,7 @@ class RuntimeLexer implements LexerInterface
         foreach ($this->customs as $case) {
             $producer = $this->createProducer($this->customs[$case]);
             $offset = $producer->canProduce($source);
-            
+
             if ($offset === false) {
                 continue;
             }
