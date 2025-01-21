@@ -2,6 +2,10 @@
 
 All notable changes to Lexical will be documented in this file.
 
+## v1.0.1 - 2025-01-21
+
+* Fix `InputSource::match()` return type to include null
+
 ## v1.0.0 - 2025-01-20
 
 * Add support for token producers.
