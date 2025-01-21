@@ -41,7 +41,7 @@ class InputSource
         return preg_match($pattern, $this->source, $matches, $flags, $this->offset) === 1;
     }
 
-    public function match(string $pattern, int $flags = 0): array
+    public function match(string $pattern, int $flags = 0): ?array
     {
         preg_match($pattern, $this->source, $matches, $flags, $this->offset);
 
