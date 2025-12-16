@@ -40,7 +40,7 @@ class RuntimeLexer implements LexerInterface
 
             $regex .= "(?<{$mark}>{$pattern})";
             $this->markToTypeMap[$mark] = $type;
-            $mark++;
+            $mark = str_increment($mark);
         }
 
         $this->regex = $regex.'/A';
@@ -79,7 +79,7 @@ class RuntimeLexer implements LexerInterface
         $matches = $source->match($this->regex, PREG_UNMATCHED_AS_NULL);
 
         if ((bool) $matches) {
-            for ($m = 'a'; $matches[$m] === null; $m++);
+            for ($m = 'a'; $matches[$m] === null; $m = str_increment($m));
 
             return [$matches[$m], $this->markToTypeMap[$m]];
         }
