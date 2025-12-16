@@ -2,6 +2,18 @@
 
 All notable changes to Lexical will be documented in this file.
 
+## v1.0.3 - 2025-12-16
+
+### What's Changed
+
+* Fix string increment deprecation notice. by @mdavis1982 in https://github.com/ryangjchandler/lexical/pull/14
+
+### New Contributors
+
+* @mdavis1982 made their first contribution in https://github.com/ryangjchandler/lexical/pull/14
+
+**Full Changelog**: https://github.com/ryangjchandler/lexical/compare/v1.0.1...v1.0.2
+
 ## v1.0.1 - 2025-01-21
 
 * Fix `InputSource::match()` return type to include null
